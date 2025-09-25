@@ -18,6 +18,6 @@ Pod::Spec.new do |s|
     'MiniAppXResources' => ['MiniAppXResources.bundle/**/*']
   }
   
-  s.dependency 'MiniAppUIKit', :git => 'git@github.com:cyberFlowTech/miniapp-lib-uikit.git'
+  s.dependency 'MiniAppUIKit', '1.0.0'
 
 end
