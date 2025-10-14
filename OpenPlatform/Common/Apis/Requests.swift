@@ -13,7 +13,7 @@ public struct InlineButtonCallbackParams: Codable {
     public let messageId: String
     public let callbackData: String
     
-    init(chatId: String, botId: String, messageId: String, callbackData: String) {
+   public init(chatId: String, botId: String, messageId: String, callbackData: String) {
         self.chatId = chatId
         self.botId = botId
         self.messageId = messageId
