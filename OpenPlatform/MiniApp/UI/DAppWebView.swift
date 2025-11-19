@@ -111,7 +111,7 @@ internal final class DAppWebView: BaseWebView {
             self.allowsLinkPreview = false
         }
         if #available(iOS 11.0, *) {
-            self.scrollView.contentInsetAdjustmentBehavior = .never
+            self.scrollView.contentInsetAdjustmentBehavior = .automatic
         }
         self.interactiveTransitionGestureRecognizerTest = { point -> Bool in
             return point.x > 30.0

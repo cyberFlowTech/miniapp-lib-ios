@@ -356,28 +356,15 @@ internal final class WebAppController: ViewController, AttachmentContainable  {
             
             transition.updateFrame(node: self.topOverscrollNode, frame: CGRect(origin: CGPoint(x: 0.0, y: -1000.0), size: CGSize(width: layout.size.width, height: 1000.0)))
             
-                        if let webView = self.webAppWebView {
-                // 修复：为了避免 fixed 元素被推上去，统一使用 frame 调整而非 contentInset
-                let scrollInset = UIEdgeInsets(top: 0.0, left: 0.0, bottom: 0.0, right: 0.0)
-                var frameBottomInset: CGFloat = layout.intrinsicInsets.bottom
-                
-                // 全屏模式下不需要底部间距
-                if true == self.controller?.isFullScreenMod() {
-                    frameBottomInset = 0.0
-                }
-                
-                let frame = CGRect(origin: CGPoint(x: layout.safeInsets.left, y: headContainerHeight), size: CGSize(width: layout.size.width - layout.safeInsets.left - layout.safeInsets.right, height: max(1.0, layout.size.height - headContainerHeight - frameBottomInset)))
+            if let webView = self.webAppWebView {
+                // 移除手动 contentInset 管理，让系统自动处理安全区域
+                let frame = CGRect(origin: CGPoint(x: layout.safeInsets.left, y: headContainerHeight), size: CGSize(width: layout.size.width - layout.safeInsets.left - layout.safeInsets.right, height: max(1.0, layout.size.height - headContainerHeight)))
                 
                 var bottomInset = layout.intrinsicInsets.bottom + layout.additionalInsets.bottom
                 if let inputHeight = self.validLayout?.0.inputHeight, inputHeight > 44.0 {
                     bottomInset = max(bottomInset, inputHeight)
                 }
                 let viewportFrame = CGRect(origin: CGPoint(x: layout.safeInsets.left, y: headContainerHeight), size: CGSize(width: layout.size.width - layout.safeInsets.left - layout.safeInsets.right, height: max(1.0, layout.size.height - headContainerHeight - bottomInset)))
-                
-                if webView.scrollView.contentInset != scrollInset {
-                    webView.scrollView.contentInset = scrollInset
-                    webView.scrollView.scrollIndicatorInsets = scrollInset
-                }
                 
                 if previousLayout != nil && (previousLayout?.inputHeight ?? 0.0).isZero, let inputHeight = layout.inputHeight, inputHeight > 44.0, transition.isAnimated {
                     webView.scrollToActiveElement(layout: layout, completion: { [weak self] contentOffset in
@@ -399,13 +386,10 @@ internal final class WebAppController: ViewController, AttachmentContainable  {
                 if useFullStyle {
                     customInsets.top = layout.statusBarHeight ?? 0.0
                 }
-                if layout.intrinsicInsets.bottom > 44.0 || (layout.inputHeight ?? 0.0) > 0.0 {
-                    customInsets.bottom = 0.0
-                } else {
-                    customInsets.bottom = layout.intrinsicInsets.bottom
-                }
+                // 始终使用真实的底部安全区域，让 H5 能正确获取 safe-area-inset-bottom
+                customInsets.bottom = layout.intrinsicInsets.bottom
                 customInsets.left = layout.safeInsets.left
-                customInsets.right = layout.safeInsets.left
+                customInsets.right = layout.safeInsets.right
                 webView.customInsets = customInsets
                 
                 if let controller = self.controller {
@@ -1509,6 +1493,8 @@ extension WebAppController.Node {
                             url = launchInfo.url
                         }
                         
+
+                        
                         strongSelf.loadUrl(url: url)
                         
                     case .failure(let error):
@@ -1698,9 +1684,11 @@ extension WebAppController.Node {
     
     private func responseContentSafeArea() {
         let useFullStyle = (true == self.controller?.isFullScreenMod() ||  true==self.controller?.isCustomNavitationStyle())
-        if let webView = self.webAppWebView, let controller = self.controller {
+        if let webView = self.webAppWebView, let controller = self.controller, let layout = self.validLayout?.0 {
             let contentTopInset =  useFullStyle ? self.controller?.floatingToolBar?.frame.bottomLeft.y : 0
-            let contentInsetsData = "{top:\(contentTopInset), bottom:0.0, left:0.0, right:0.0}"
+            // 使用真实的底部安全区域，让 H5 能正确获取 safe-area-inset-bottom
+            let contentBottomInset = layout.intrinsicInsets.bottom
+            let contentInsetsData = "{top:\(contentTopInset ?? 0), bottom:\(contentBottomInset), left:\(layout.safeInsets.left), right:\(layout.safeInsets.right)}"
             controller.controllerNode.sendEvent(name: "content_safe_area_changed", data: contentInsetsData)
         }
     }
