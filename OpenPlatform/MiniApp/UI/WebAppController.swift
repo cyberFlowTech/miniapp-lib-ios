@@ -356,18 +356,14 @@ internal final class WebAppController: ViewController, AttachmentContainable  {
             
             transition.updateFrame(node: self.topOverscrollNode, frame: CGRect(origin: CGPoint(x: 0.0, y: -1000.0), size: CGSize(width: layout.size.width, height: 1000.0)))
             
-            if let webView = self.webAppWebView {
-                var scrollInset = UIEdgeInsets(top: 0.0, left: 0.0, bottom: layout.intrinsicInsets.bottom, right: 0.0)
-                var frameBottomInset: CGFloat = 0.0
+                        if let webView = self.webAppWebView {
+                // 修复：为了避免 fixed 元素被推上去，统一使用 frame 调整而非 contentInset
+                let scrollInset = UIEdgeInsets(top: 0.0, left: 0.0, bottom: 0.0, right: 0.0)
+                var frameBottomInset: CGFloat = layout.intrinsicInsets.bottom
                 
-                if scrollInset.bottom > 40.0 {
-                    frameBottomInset = scrollInset.bottom
-                    scrollInset.bottom = 0.0
-                }
-                
+                // 全屏模式下不需要底部间距
                 if true == self.controller?.isFullScreenMod() {
                     frameBottomInset = 0.0
-                    scrollInset.bottom = 0.0
                 }
                 
                 let frame = CGRect(origin: CGPoint(x: layout.safeInsets.left, y: headContainerHeight), size: CGSize(width: layout.size.width - layout.safeInsets.left - layout.safeInsets.right, height: max(1.0, layout.size.height - headContainerHeight - frameBottomInset)))
