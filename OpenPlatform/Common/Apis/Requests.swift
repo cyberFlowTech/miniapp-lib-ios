@@ -74,7 +74,7 @@ public struct BotInfo: Codable {
         case updatedAt = "updated_at"
     }
     
-    init(id: String, name: String, token: String, userId: String, provider: String, identifier: String, bio: String, avatarUrl: String, commands: [Command], createdAt: String, updatedAt: String) {
+    public init(id: String, name: String, token: String, userId: String, provider: String, identifier: String, bio: String, avatarUrl: String, commands: [Command], createdAt: String, updatedAt: String) {
         self.id = id
         self.name = name
         self.token = token
